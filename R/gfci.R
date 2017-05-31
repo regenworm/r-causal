@@ -1,9 +1,9 @@
 gfci <- function(df, penaltydiscount = 2.0, maxDegree = 3, maxPathLength = -1, significance = 0.05,
-    completeRuleSetUsed = FALSE, faithfulnessAssumed = TRUE, verbose = FALSE, java.parameters = NULL, 
+    completeRuleSetUsed = FALSE, faithfulnessAssumed = TRUE, verbose = FALSE, java.parameters = NULL,
     priorKnowledge = NULL){
-    
+
     params <- list(NULL)
-    
+
     if(!is.null(java.parameters)){
         options(java.parameters = java.parameters)
         params <- c(java.parameters = java.parameters)
@@ -12,7 +12,7 @@ gfci <- function(df, penaltydiscount = 2.0, maxDegree = 3, maxPathLength = -1, s
     # Data Frame to Independence Test
     tetradData <- loadContinuousData(df)
     indTest <- .jnew("edu/cmu/tetrad/search/IndTestFisherZ", tetradData, significance)
-    
+
 	indTest <- .jcast(indTest, "edu/cmu/tetrad/search/IndependenceTest")
 
     # Data Frame to Tetrad Dataset
@@ -59,7 +59,7 @@ gfci <- function(df, penaltydiscount = 2.0, maxDegree = 3, maxPathLength = -1, s
     cat("completeRuleSetUsed = ", completeRuleSetUsed,"\n")
     cat("faithfulnessAssumed = ", faithfulnessAssumed,"\n")
     cat("verbose = ", verbose,"\n")
-    
+
     # Search
     tetrad_graph <- .jcall(gfci_instance, "Ledu/cmu/tetrad/graph/Graph;", "search")
 
@@ -71,6 +71,12 @@ gfci <- function(df, penaltydiscount = 2.0, maxDegree = 3, maxPathLength = -1, s
     gfci_edges <- extractTetradEdges(tetrad_graph)
 
     gfci$edges <- gfci_edges
+
+    # convert output of GFCI into an R object (graphNEL)
+    gfci_graphNEL = tetradPattern2graphNEL(resultGraph = tetrad_graph,
+        verbose = verbose)
+
+    gfci$graphNEL <- gfci_graphNEL
 
     return(gfci)
 }
